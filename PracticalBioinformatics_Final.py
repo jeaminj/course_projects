@@ -67,12 +67,14 @@ def reverseComplement(dna_seq): # Returns the reverse complement of a DNA sequen
     # First transcribes the DNA sequence to its complement strand, then reverses and returns the string
     return ''.join([reverse_complement_dict[nuc] for nuc in dna_seq])[::-1]
 
-# Orf finder function v2.1 --------------------------------------------------------------------
+# Orf finder function v3 --------------------------------------------------------------------
 def findORFs(dna_seq): # Returns all possible open reading frames 
+   frames = []
    orfs = []
    start_codon = re.search("ATG", dna_seq)
    reverse_start_codon = re.search("ATG", (reverseComplement(dna_seq)))
-
+   
+   # Returns all 6 frames of a dna sequence into 'frames' array'
    if start_codon and reverse_start_codon:
        frame1 = start_codon.start() # Gets the 'A' int position of the first "ATG" codon in the dna sequence
        frame2 = frame1 + 1 # Gets the 'T' int position of the first "ATG" codon in the dna sequence
@@ -85,7 +87,7 @@ def findORFs(dna_seq): # Returns all possible open reading frames
        forward_frames = frame_positions[0:3]
        reverse_frames = frame_positions[3:6]
 
-       #From each open reading frame position, prints the orf sequence separated by codon:
+       #From each frame position, prints the frame sequence separated by codon:
        for pos in frame_positions:
             codons = []
             for nuc in range(pos, len(dna_seq)-2,3):
@@ -100,8 +102,40 @@ def findORFs(dna_seq): # Returns all possible open reading frames
                 # Quit appending if stop codon in found
                 if current_codon in ["TAG", "TAA", "TGA"]:
                     break
-            orfs.append(codons)
-           
+            frames.append(codons)
+        
+   # Examines if an actual ORF is present from the frames stored in 'frames' array:
+   for sequence in frames:
+       #print(sequence)
+       #print('')
+       orf_codons = []
+       stop_codons = ['TAG','TGA','TAA']
+       ATG_index = None
+       # Scans through all codons, searches for first "ATG" and gets value of its index pos if found
+       for index, codon in enumerate(sequence):
+           if codon == 'ATG':
+               ATG_index = index
+               break
+        # If the sequence of the frame contains a start codon ('ATG):
+       if ATG_index is not None:
+           stop_index = None
+           for index, codon in enumerate(sequence[ATG_index:]):
+               if codon in stop_codons:
+                   # 
+                   stop_index = ATG_index + index
+                   break
+           # if the frame sequence also contains a stop codon: ORF!
+           if stop_index is not None:
+               orf_codons.append(sequence[ATG_index:stop_index + 1]) # ORF sequence between START:STOP codon is added to orf_codons array 
+           # If frame sequence contains a start codon, but no stop codon: no ORF
+           else:
+               orf_codons.append(f"ORF not found in this frame: Start codon is present, but no Stop codon")
+       # If frame sequence doesnt contain a start codon: no ORF
+       else:
+           orf_codons.append(f"ORF not found in this frame: No start codon present") 
+       orfs.append(orf_codons)
+   
+   # Function returns any valid orfs or message indicating the frame didnt contain any ORFs
    return orfs
 
 '''
@@ -115,7 +149,6 @@ def main():
     myDict = createDictionary("TestSequences.txt")
     
     # Jeamin ---------- *comment out to not have ORFs printed*
-
     # Organizes the array of ORFs returned from the findORFs function, 
     # Would prob be better to add more features and turn into separate function
     key_names = myDict.keys()
@@ -130,11 +163,12 @@ def main():
     # Jeamin ----------
     
     
-#main()
-dna = "ATGTCAGCTAGCGGGATTCAGCTATAGGCCATGGC"
-print(dna)
-print (reverseComplement(dna))
-for orf in findORFs(dna):
-    print (orf)
+main()
+#dna = "TTAGCCATGCTAGCAGCTATGAGATCTGCGGATAGCGATACGCGATCAGCTATCGCAGTCAGCATCGACATCTACGATTAG"
+#print(dna)
+#print (reverseComplement(dna))
+#print(findORFs(dna))
+#for orf in findORFs(dna):
+    #print (orf)
 
 
