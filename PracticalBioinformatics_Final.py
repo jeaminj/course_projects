@@ -164,11 +164,5 @@ def main():
     
     
 main()
-#dna = "TTAGCCATGCTAGCAGCTATGAGATCTGCGGATAGCGATACGCGATCAGCTATCGCAGTCAGCATCGACATCTACGATTAG"
-#print(dna)
-#print (reverseComplement(dna))
-#print(findORFs(dna))
-#for orf in findORFs(dna):
-    #print (orf)
 
 
