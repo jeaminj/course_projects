@@ -67,11 +67,11 @@ def reverseComplement(dna_seq): # Returns the reverse complement of a DNA sequen
     # First transcribes the DNA sequence to its complement strand, then reverses and returns the string
     return ''.join([reverse_complement_dict[nuc] for nuc in dna_seq])[::-1]
 
-# Orf finder function v2.0 --------------------------------------------------------------------
+# Orf finder function v2.1 --------------------------------------------------------------------
 def findORFs(dna_seq): # Returns all possible open reading frames 
    orfs = []
    start_codon = re.search("ATG", dna_seq)
-   reverse_start_codon = re.search("ATG", reverseComplement(dna_seq))
+   reverse_start_codon = re.search("ATG", (reverseComplement(dna_seq)))
 
    if start_codon and reverse_start_codon:
        frame1 = start_codon.start() # Gets the 'A' int position of the first "ATG" codon in the dna sequence
@@ -82,17 +82,26 @@ def findORFs(dna_seq): # Returns all possible open reading frames
        frame6 = frame4 + 2 # Gets the 'G' int position of the first "ATG" codon in the reverse complement sequence
        
        frame_positions = [frame1,frame2,frame3,frame4,frame5,frame6]
+       forward_frames = frame_positions[0:3]
+       reverse_frames = frame_positions[3:6]
 
        #From each open reading frame position, prints the orf sequence separated by codon:
        for pos in frame_positions:
             codons = []
             for nuc in range(pos, len(dna_seq)-2,3):
-                current_codon = dna_seq[nuc:nuc+3]
-                codons.append(current_codon)
+                # Forward frames
+                if pos in forward_frames:
+                    current_codon = dna_seq[nuc:nuc+3]
+                    codons.append(current_codon)
+                # Reverse frames
+                elif pos in reverse_frames:
+                    current_codon = reverseComplement(dna_seq)[nuc:nuc+3]
+                    codons.append(current_codon)
                 # Quit appending if stop codon in found
                 if current_codon in ["TAG", "TAA", "TGA"]:
                     break
             orfs.append(codons)
+           
    return orfs
 
 '''
@@ -121,4 +130,11 @@ def main():
     # Jeamin ----------
     
     
-main()
+#main()
+dna = "ATGTCAGCTAGCGGGATTCAGCTATAGGCCATGGC"
+print(dna)
+print (reverseComplement(dna))
+for orf in findORFs(dna):
+    print (orf)
+
+
