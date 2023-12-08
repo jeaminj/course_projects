@@ -61,45 +61,39 @@ Should be deleted for final version
 Begin section of functions written by Jeamin Jung
 
 '''
-def getORF_length():
-    # Asks user for minimum ORF length to include, signifies to user the default is 50 bases
-    orf_length = input("What is the minimum length of ORFs you wish to return from file? (default = 50 bases): ")
-    return orf_length
 
-# TO be utilized for getting reading frames 4,5, and 6
-def reverseComplement(dna_seq):
+def reverseComplement(dna_seq): # Returns the reverse complement of a DNA sequence
     reverse_complement_dict = {'A':'T', 'T':'A', 'G':'C', 'C':'G'}
     # First transcribes the DNA sequence to its complement strand, then reverses and returns the string
     return ''.join([reverse_complement_dict[nuc] for nuc in dna_seq])[::-1]
 
-# Orf finder function v1.0 --------------------------------------------------------------------
-# *** Currently only prints ONE reading frame, Need to add code for getting other 5 reading frames ***
-def findORFs(dna_seq, orf_length):
+# Orf finder function v2.0 --------------------------------------------------------------------
+def findORFs(dna_seq): # Returns all possible open reading frames 
+   orfs = []
    start_codon = re.search("ATG", dna_seq)
-   # Only begins extrating codons from reading frame if a start codon exists in the dna sequence
-   if start_codon:
-       # Gets the int position of the first "ATG" codon in the dna sequence
-       start_codon_pos = start_codon.start()
-       codons = []
-       for pos in range(start_codon_pos, len(dna_seq)-2,3):
-           current_codon = dna_seq[pos:pos+3]
-           codons.append(current_codon)
-           # Quit appending if stop codon in found
-           if current_codon in ["TAG", "TAA", "TGA"]:
-               break 
-       # Fulfilling the minimum orf length requirement and retracting output if user-input miminum orf_length exceeds that of actual orf length
-       rf = '' 
-       joined_rf = rf.join(codons) 
-       rf_length = len(joined_rf) 
-       if rf_length >= 50:
-           if rf_length >= orf_length:
-               print(codons)
-           else: 
-               print(f"The ORF length of this DNA sequence is below your minimum inputted threshold of >{orf_length}< bases")
-       else:
-           print("The ORF length of this DNA sequence is less than 50 bases")
-   else:
-       print("No start codon found in this DNA sequence")
+   reverse_start_codon = re.search("ATG", reverseComplement(dna_seq))
+
+   if start_codon and reverse_start_codon:
+       frame1 = start_codon.start() # Gets the 'A' int position of the first "ATG" codon in the dna sequence
+       frame2 = frame1 + 1 # Gets the 'T' int position of the first "ATG" codon in the dna sequence
+       frame3 = frame1 + 2 # Gets the 'G' int position of the first "ATG" codon in the dna sequence
+       frame4 = reverse_start_codon.start() # Gets the 'A' int position of the first "ATG" codon in the reverse complement sequence
+       frame5 = frame4 + 1 # Gets the 'T' int position of the first "ATG" codon in the reverse complement sequence
+       frame6 = frame4 + 2 # Gets the 'G' int position of the first "ATG" codon in the reverse complement sequence
+       
+       frame_positions = [frame1,frame2,frame3,frame4,frame5,frame6]
+
+       #From each open reading frame position, prints the orf sequence separated by codon:
+       for pos in frame_positions:
+            codons = []
+            for nuc in range(pos, len(dna_seq)-2,3):
+                current_codon = dna_seq[nuc:nuc+3]
+                codons.append(current_codon)
+                # Quit appending if stop codon in found
+                if current_codon in ["TAG", "TAA", "TGA"]:
+                    break
+            orfs.append(codons)
+   return orfs
 
 '''
 End section of functions written by Jeamin Jung
@@ -110,12 +104,21 @@ End section of functions written by Jeamin Jung
 def main():
         
     myDict = createDictionary("TestSequences.txt")
+    
+    # Jeamin ---------- *comment out to not have ORFs printed*
 
-    # Jeamin ----------
-    orf_length = int(getORF_length())
+    # Organizes the array of ORFs returned from the findORFs function, 
+    # Would prob be better to add more features and turn into separate function
+    key_names = myDict.keys()
     for key in myDict:
         dna_seq = myDict[key]
-        findORFs(dna_seq, orf_length)
+        orf_count = 1
+        if key in key_names:
+            print(f"\nAll ORFs from {key}:")
+        for orf in findORFs(dna_seq):
+            print(f"[{orf_count}]" , orf)
+            orf_count += 1
     # Jeamin ----------
+    
     
 main()
