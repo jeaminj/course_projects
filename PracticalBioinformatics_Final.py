@@ -106,7 +106,7 @@ def findORFs(dna_seq): # Returns all possible open reading frames
         
    # Examines if an actual ORF is present from the frames stored in 'frames' array:
    for sequence in frames:
-       #print(sequence) ->uncomment to see the 6 frames<-
+       #print(sequence) # uncomment to see the 6 frames
        #print('')
        orf_codons = []
        stop_codons = ['TAG','TGA','TAA']
