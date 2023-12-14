@@ -67,15 +67,12 @@ def reverseComplement(dna_seq): # Returns the reverse complement of a DNA sequen
     # First transcribes the DNA sequence to its complement strand, then reverses and returns the string
     return ''.join([reverse_complement_dict[nuc] for nuc in dna_seq])[::-1]
 
-# Orf finder function v3 --------------------------------------------------------------------
-def findORFs(dna_seq): # Returns all possible open reading frames 
-   frames = []
-   orfs = []
-   start_codon = re.search("ATG", dna_seq)
-   reverse_start_codon = re.search("ATG", (reverseComplement(dna_seq)))
-   
-   # Returns all 6 frames of a dna sequence into 'frames' array'
-   if start_codon and reverse_start_codon:
+def getFrames(dna_seq):
+    frames = []
+    start_codon = re.search("ATG", dna_seq)
+    reverse_start_codon = re.search("ATG", (reverseComplement(dna_seq)))
+    # Returns all 6 frames of a dna sequence into 'frames' array'
+    if start_codon and reverse_start_codon:
        frame1 = start_codon.start() # Gets the 'A' int position of the first "ATG" codon in the dna sequence
        frame2 = frame1 + 1 # Gets the 'T' int position of the first "ATG" codon in the dna sequence
        frame3 = frame1 + 2 # Gets the 'G' int position of the first "ATG" codon in the dna sequence
@@ -103,11 +100,14 @@ def findORFs(dna_seq): # Returns all possible open reading frames
                 if current_codon in ["TAG", "TAA", "TGA"]:
                     break
             frames.append(codons)
-        
-   # Examines if an actual ORF is present from the frames stored in 'frames' array:
+    return frames
+
+def getORFs(frames):
+   orfs = []
+    # Examines if an actual ORF is present from the frames stored in 'frames' array:
    for sequence in frames:
-       #print(sequence) # uncomment to see the 6 frames
-       #print('')
+       print(sequence) # uncomment to see the 6 frames
+       print('')
        orf_codons = []
        stop_codons = ['TAG','TGA','TAA']
        ATG_index = None
@@ -129,11 +129,11 @@ def findORFs(dna_seq): # Returns all possible open reading frames
                orf_codons.append(sequence[ATG_index:stop_index + 1]) # ORF sequence between START:STOP codon is added to orf_codons array 
            # If frame sequence contains a start codon, but no stop codon: no ORF
            else:
-               orf_codons.append(f"ORF not found in this frame: Start codon is present, but no Stop codon")
+               orf_codons.append("ORF not found in this frame: Start codon is present, but no Stop codon")
        # If frame sequence doesnt contain a start codon: no ORF
        else:
-           orf_codons.append(f"ORF not found in this frame: No start codon present") 
-       orfs.append(orf_codons)
+           orf_codons.append("ORF not found in this frame: No start codon present") 
+       orfs.append((orf_codons))
    
    # Function returns any valid orfs or message indicating the frame didnt contain any ORFs
    return orfs
@@ -143,26 +143,42 @@ End section of functions written by Jeamin Jung
 --> Still W.I.P
 '''
 
-    
+#frames = []   
+#orfs = []
 def main():
-        
-    myDict = createDictionary("TestSequences.txt")
     
-    # Jeamin ---------- *comment out to not have ORFs printed*
-    # Organizes the array of ORFs returned from the findORFs function, 
-    # Would prob be better to add more features and turn into separate function
+    myDict = createDictionary("sequence.fasta")
+    print(myDict)
+    # Jeamin ---------- *comment out to not have ORFs printed* 
     key_names = myDict.keys()
+    # ORFS FROM FRAMES
     for key in myDict:
+        # Getting and printing frames from :
         dna_seq = myDict[key]
+        frames = getFrames(dna_seq)
         orf_count = 1
+        for entry in frames:
+            print(entry)
+        # Getting orfs from frames and printing
         if key in key_names:
             print(f"\nAll ORFs from {key}:")
-        for orf in findORFs(dna_seq):
+        orfs = getORFs(frames)
+        for orf in orfs:
             print(f"[{orf_count}]" , orf)
             orf_count += 1
+    
+    print("\n----- FRAME 2: -----")
+    print(frames[2])
+    print("\n ---- ORF from FRAME 2: ----")
+    orf2 = (orfs[0])[0]
+    print(orf2)
+    print("----")
+    print(''.join(orf2).replace(',',' '))
+    print(len(''.join(orf2).replace(',',' ')))
+
     # Jeamin ----------
-    
-    
+   
+   
 main()
 
 
